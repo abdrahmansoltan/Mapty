@@ -15,9 +15,9 @@ class Workout {
   clicks = 0;
 
   constructor(coords, distance, duration) {
-    this.coords = coords;
-    this.distance = distance;
-    this.duration = duration;
+    this.coords = coords; // [lat, lng]
+    this.distance = distance; // in km
+    this.duration = duration; // in min
   }
 
   _setDescription() {
@@ -36,6 +36,7 @@ class Workout {
 
 class Running extends Workout {
   type = 'running';
+
   constructor(coords, distance, duration, cadence) {
     super(coords, distance, duration);
     this.cadence = cadence;
@@ -51,6 +52,7 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = 'cycling';
+
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
     this.elevationGain = elevationGain;
@@ -63,16 +65,12 @@ class Cycling extends Workout {
     return this.speed;
   }
 }
-// //test classes
-// const run1 = new Running([39, -12], 5.2, 24, 178);
-// const cycling1 = new Cycling([39, -12], 27, 95, 523);
-// console.log(run1,cycling1);
 
 ////////////////////////////////////////////////////////////
 // APLICATION ARCHITECTURE
 class App {
   #map;
-  #mapZoomLevel = 14;
+  #mapZoomLevel = 13;
   #mapEvent;
   #workouts = [];
   constructor() {
@@ -81,6 +79,7 @@ class App {
     // Get data from local storage
     this._getLocalStorage();
 
+    // -----------Attach event handlers-----------//
     form.addEventListener('submit', this._newWorkout.bind(this));
 
     // choosing TYPE(running/cycling)
@@ -88,16 +87,19 @@ class App {
 
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
   }
+
   _getPostion() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         this._loadMap.bind(this),
+        // here we use (bind) so as (_loadMap) is calle by (getCurrentPosition) function and not the current class so we change (this) keyWord by using (bind)
         function () {
           alert("couldn't get your position");
         }
       );
     }
   }
+
   _loadMap(position) {
     const { latitude } = position.coords;
     const { longitude } = position.coords;
@@ -114,31 +116,39 @@ class App {
     // HANDLING CLICKS ON MAP
     this.#map.on('click', this._showForm.bind(this));
 
+    // we render (workout markers) here instead of in (_getLocalStorage in the constructor) as the map needs to be loaded first so that it could put the markers
     this.#workouts.forEach(work => {
-      this._renderWorkoutMarker(work)
+      this._renderWorkoutMarker(work);
     });
   }
 
   _showForm(mapE) {
+    // we used different name then assigned it to the global property (#mapEvent) so that we can use it outside the scope of this function
     this.#mapEvent = mapE;
+
     // display the form when clicking on the map
     form.classList.remove('hidden');
     // focus>> to start writing immediately
+
+    // focus on the distance input box immediately after form appears
     inputDistance.focus();
   }
+
   _hideForm(mapE) {
-    // Empty inputs
+    // Empty inputs after submiting
     inputDistance.value =
       inputDuration.value =
       inputCadence.value =
       inputElevation.value =
         '';
 
+    // to prevent workouts from sliding up when form disappear
     form.style.display = 'none';
     form.classList.add('hidden');
     setTimeout(_ => (form.style.display = 'grid'), 1000);
   }
 
+  // change which input row appears when selecting (cycling / running)
   _toggleElevationField() {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
@@ -152,7 +162,7 @@ class App {
 
     e.preventDefault();
 
-    // Get data from form
+    // Get data from form  & (convert strings to numbers)
     const type = inputType.value;
     const distance = inputDistance.value;
     const duration = inputDuration.value;
@@ -164,10 +174,17 @@ class App {
       const cadence = inputCadence.value;
       // check if data is valid
       if (
+        // !Number.isFinite(distance) ||
+        // !Number.isFinite(duration) ||
+        // !Number.isFinite(cadence)
+
+        // or
         !validInputs(distance, duration, cadence) &&
         !allPositive(distance, duration, cadence)
       )
         return alert('inputs must be positive numbers!');
+
+      // else
       workout = new Running([lat, lng], distance, duration, cadence);
     }
 
@@ -177,9 +194,11 @@ class App {
       // check if data is valid
       if (
         !validInputs(distance, duration, elevation) &&
-        !allPositive(distance, duration)
+        !allPositive(distance, duration) // it's ok for elevation to be nagative
       )
         return alert('inputs must be positive numbers!');
+
+      // else
       workout = new Cycling([lat, lng], distance, duration, elevation);
     }
 
@@ -209,6 +228,7 @@ class App {
           minWidth: 100,
           autoClose: false,
           closeOnClick: false,
+          // the class will set the style based on the workout type
           className: `${workout.type}-popup`,
         })
       )
@@ -267,21 +287,23 @@ class App {
   }
 
   _moveToPopup(e) {
+    // BUGFIX: When we click on a workout before the map has loaded, we get an error. But there is an easy fix:
+    if (!this.#map) return; // Gaurd clause
+
+    // event delegation
     const workoutEl = e.target.closest('.workout');
     if (!workoutEl) return; // Guard Claus
-    // console.log(workoutEl);
 
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
     );
-    // console.log(workout);
+
+    // leaflet built-in method to move the view to a coordinate
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      // options from documentation
       animate: true,
       pan: { duration: 1 },
     });
-
-    // using the puplic interface
-    // workout.click();
   }
 
   _setLocalStorage() {
@@ -300,9 +322,9 @@ class App {
     });
   }
 
-  reset(){
-    localStorage.removeItem('workouts')
-    location.reload()
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
