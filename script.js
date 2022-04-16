@@ -7,6 +7,7 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const resetButton = document.querySelector('.btn');
 
 ////////////////////////////////////////////////////////////
 class Workout {
@@ -81,6 +82,8 @@ class App {
 
     // -----------Attach event handlers-----------//
     form.addEventListener('submit', this._newWorkout.bind(this));
+    // reset button
+    resetButton.addEventListener('click', this.reset);
 
     // choosing TYPE(running/cycling)
     inputType.addEventListener('change', this._toggleElevationField);
