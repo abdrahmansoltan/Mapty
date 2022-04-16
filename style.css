@@ -1,6 +1,7 @@
 :root {
   --color-brand--1: #ffb545;
   --color-brand--2: #00c46a;
+  --color-brand--3: #c41d00;
 
   --color-dark--1: #2d3439;
   --color-dark--2: #42484d;
@@ -66,6 +67,29 @@ a:visited {
   width: 0;
 }
 
+/* INSTRUCTIONS */
+.instructions {
+  background-color: var(--color-dark--2);
+  border-top: 5px solid var(--color-brand--3);
+  border-radius: 5px;
+  padding: 1.5rem 2.25rem;
+  margin-bottom: 1.75rem;
+}
+.instructions__title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 2.2rem;
+  text-align: center;
+}
+.instructions__steps {
+  padding-left: 3rem;
+  font-size: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+/* WORKOUT */
 .workout {
   background-color: var(--color-dark--2);
   border-radius: 5px;
@@ -178,14 +202,14 @@ a:visited {
   color: var(--color-light--1);
 }
 
-.twitter-link:link,
-.twitter-link:visited {
+.website-link:link,
+.website-link:visited {
   color: var(--color-light--1);
   transition: all 0.2s;
 }
 
-.twitter-link:hover,
-.twitter-link:active {
+.website-link:hover,
+.website-link:active {
   color: var(--color-light--2);
 }
 
